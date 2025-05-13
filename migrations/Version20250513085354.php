@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250512181101 extends AbstractMigration
+final class Version20250513085354 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -24,6 +24,12 @@ final class Version20250512181101 extends AbstractMigration
             CREATE TABLE contextos (id INT AUTO_INCREMENT NOT NULL, code VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE hoteles (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, direction VARCHAR(255) NOT NULL, city VARCHAR(255) NOT NULL, phone_number VARCHAR(20) NOT NULL, email VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE huespedes (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, surname VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, phone VARCHAR(9) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE idiomas (id INT AUTO_INCREMENT NOT NULL, code VARCHAR(2) NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
@@ -31,6 +37,9 @@ final class Version20250512181101 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE plantillas (id INT AUTO_INCREMENT NOT NULL, idcontext_id INT NOT NULL, code VARCHAR(255) NOT NULL, data LONGTEXT DEFAULT NULL, INDEX IDX_E91A52B7A6A9DCF5 (idcontext_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE reservas (id INT AUTO_INCREMENT NOT NULL, huesped_id INT NOT NULL, check_in_date DATE NOT NULL, check_out_date DATE NOT NULL, room_type VARCHAR(255) NOT NULL, INDEX IDX_AA1DAB01A9B1478B (huesped_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE usuarios (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, surname VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -48,6 +57,9 @@ final class Version20250512181101 extends AbstractMigration
             ALTER TABLE plantillas ADD CONSTRAINT FK_E91A52B7A6A9DCF5 FOREIGN KEY (idcontext_id) REFERENCES contextos (id)
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE reservas ADD CONSTRAINT FK_AA1DAB01A9B1478B FOREIGN KEY (huesped_id) REFERENCES huespedes (id)
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE contextos_variables ADD CONSTRAINT FK_F3E9DA3CED82107C FOREIGN KEY (variables_id) REFERENCES variables (id) ON DELETE CASCADE
         SQL);
         $this->addSql(<<<'SQL'
@@ -62,6 +74,9 @@ final class Version20250512181101 extends AbstractMigration
             ALTER TABLE plantillas DROP FOREIGN KEY FK_E91A52B7A6A9DCF5
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE reservas DROP FOREIGN KEY FK_AA1DAB01A9B1478B
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE contextos_variables DROP FOREIGN KEY FK_F3E9DA3CED82107C
         SQL);
         $this->addSql(<<<'SQL'
@@ -71,6 +86,12 @@ final class Version20250512181101 extends AbstractMigration
             DROP TABLE contextos
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE hoteles
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE huespedes
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE idiomas
         SQL);
         $this->addSql(<<<'SQL'
@@ -78,6 +99,9 @@ final class Version20250512181101 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE plantillas
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE reservas
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE usuarios

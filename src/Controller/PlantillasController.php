@@ -3,12 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\Contextos;
+use App\Entity\Hoteles;
+use App\Entity\Huespedes;
 use App\Entity\Incidencias;
 use App\Entity\Plantillas;
+use App\Entity\Reservas;
 use App\Entity\Usuarios;
 use App\Form\PlantillasType;
 use App\Repository\PlantillasRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PhpParser\Node\Stmt\Break_;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -276,81 +280,132 @@ final class PlantillasController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $idTemplate = $data['templateId'];
-        $languageCode = $data['languageCode'];
-        $idUser = $data['idUser'];
-        $idIncident = $data['idIncident'];
+        if (!isset($data['templateId']) || !isset($data['idUser']) || !isset($data['guestId']) || !isset($data['idHotel']) || !isset($data['idIncident'])) {
+            return new JsonResponse(['error' => 'Faltan parámetros requeridos'], 400);
+        }
 
-        // Obtener la plantilla desde la base de datos
+        $idTemplate = $data['templateId'] ?? null;
+        $languageCode = $data['languageCode'] ?? 'es'; // idioma por defecto
+
         $template = $this->entityManager->getRepository(Plantillas::class)->find($idTemplate);
         if (!$template) {
             return new JsonResponse(['error' => 'No se ha encontrado la plantilla con el ID: ' . $idTemplate], 404);
         }
 
-        // Verificar si los datos de usuario e incidente son válidos
-        $user = $this->entityManager->getRepository(Usuarios::class)->find($idUser);
-        $incident = $this->entityManager->getRepository(Incidencias::class)->find($idIncident);
-
-        if (!$user || !$incident) {
-            return new JsonResponse(['error' => 'No se ha encontrado el usuario o el incidente'], 404);
+        $context = $template->getIdcontext();
+        if (!$context) {
+            return new JsonResponse(['error' => 'La plantilla no tiene contexto asociado'], 400);
         }
 
-        // Si no se especifica un idioma, usamos el predeterminado (español)
-        if (empty($languageCode) || !isset($template->getData()[$languageCode])) {
-            $languageCode = 'es'; // Idioma por defecto
-        }
-
-        // Obtener el contenido y el asunto de la plantilla para el idioma solicitado
-        $dataJson = $template->getData();
-        $content = $dataJson[$languageCode]['content'] ?? null;
-        $subject = $dataJson[$languageCode]['subject'] ?? null;
+        // Cargar contenido según idioma
+        $templateData = $template->getData();
+        $content = $templateData[$languageCode]['content'] ?? null;
+        $subject = $templateData[$languageCode]['subject'] ?? null;
 
         if (!$content) {
-            return new JsonResponse(['error' => "La plantilla no tiene contenido para el idioma '$languageCode'."], 400);
+            return new JsonResponse(['error' => "No hay contenido para el idioma '$languageCode'."], 400);
         }
 
-        $listVariables = $template->getIdcontext()->getVariables();
+        $variables = $context->getVariables();
+        $contextCode = $context->getCode();
 
-        foreach ($listVariables as $variableName) {
-            $code = $variableName->getCode();
-            $placeholder = "{{" . $code . "}}";
-            $value = '';
+        // Obtener los valores de las variables basados en el contexto y los datos proporcionados
+        $replacementValues = $this->showPlaceholders($contextCode, $data);
 
-            switch ($code) {
-                case 'GUEST_NAME':
-                    $value = $user->getName();
-                    break;
-                case 'USER_SURNAME':
-                    $value = $user->getSurname();
-                    break;
-                case 'USER_EMAIL':
-                    $value = $user->getEmail();
-                    break;
-                case 'TASK_ID':
-                    $value = $incident->getId();
-                    break;
-                case 'TASK_WHERE':
-                    $value = $incident->getPlace();
-                    break;
-                case 'TASK_DESCRIPTION':
-                    $value = $incident->getDescription();
-                    break;
-                case 'TASK_STATUS':
-                    $value = $incident->getStatus();
-                    break;
-                case 'HOTEL_NAME':
-                    $value = "HOTEL JXY";
-                    break;
+        $missingVars = [];
+        foreach ($variables as $variable) {
+            $code = $variable->getCode();
+            if (!array_key_exists($code, $replacementValues)) {
+                $missingVars[] = $code;
             }
+        }
 
+        if (!empty($missingVars)) {
+            return new JsonResponse([
+                'error' => 'Faltan datos para reemplazar: ' . implode(', ', $missingVars)
+            ], 400);
+        }
+
+        foreach ($variables as $variable) {
+            $code = $variable->getCode();
+            $placeholder = '{{' . $code . '}}';
+            $value = $replacementValues[$code];
             $content = str_replace($placeholder, $value, $content);
             $subject = str_replace($placeholder, $value, $subject);
         }
 
-        // Devolver la plantilla renderizada junto con el asunto
         return new JsonResponse([
             'rendered' => $content,
             'subject' => $subject
         ]);
+    }
+
+    public function showPlaceholders(string $contextCode, array $data): array
+    {
+        $guest = $this->entityManager->getRepository(Huespedes::class)->find($data['guestId']);
+        if (!$guest) {
+            return ['error' => 'Huésped no encontrado'];
+        }
+
+        if (!isset($data['idUser'])) {
+            return ['error' => 'Falta userId'];
+        }
+
+        $user = $this->entityManager->getRepository(Usuarios::class)->find($data['idUser']);
+        if (!$user) {
+            return ['error' => 'Usuario no encontrado'];
+        }
+
+        $hotel = $this->entityManager->getRepository(Hoteles::class)->find($data['idHotel']);
+        if (!$hotel) {
+            return ['error' => 'Hotel no encontrado'];
+        }
+
+        $baseData = [
+            "GUEST_NAME" => $guest->getName(),
+            "GUEST_SURNAME" => $guest->getSurname(),
+            "HOTEL_NAME" => $hotel->getName(),
+            "GUEST_EMAIL" => $guest->getEmail(),
+            "HOTEL_PHONE" => $hotel->getPhoneNumber(),
+            "HOTEL_EMAIL" => $hotel->getEmail(),
+        ];
+
+        switch ($contextCode) {
+            case 'USER_MANAGEMENT':
+                return $baseData;
+            case 'INCIDENT_MANAGEMENT':
+                if (!isset($data['idIncident'])) {
+                    return ['error' => 'Falta idIncident'];
+                }
+
+                $incident = $this->entityManager->getRepository(Incidencias::class)->find($data['idIncident']);
+                if (!$incident) {
+                    return ['error' => 'Incidencia no encontrada'];
+                }
+
+                return array_merge($baseData, [
+                    'TASK_ID' => $incident->getId(),
+                    'TASK_WHERE' => $incident->getPlace(),
+                    'TASK_STATUS' => $incident->getStatus(),
+                    'TASK_DESCRIPTION' => $incident->getDescription()
+                ]);
+            case 'BOOKING_MANAGEMENT':
+                if (!isset($data['idBooking'])) {
+                    return ['error' => 'Falta idBooking'];
+                }
+
+                $booking = $this->entityManager->getRepository(Reservas::class)->find($data['idBooking']);
+                if (!$booking) {
+                    return ['error' => 'Reserva no encontrada'];
+                }
+                
+                return array_merge($baseData, [
+                    'CHECKIN_DATE' => $booking->getCheckInDate()->format('Y-m-d'),
+                    'CHECKOUT_DATE' => $booking->getCheckOutDate()->format('Y-m-d'),
+                    'ROOM_TYPE' => $booking->getRoomType()
+                ]);
+            default:
+                return ['error' => 'Contexto no encontrado o soportado'];
+        }
     }
 }
