@@ -310,7 +310,7 @@ final class PlantillasController extends AbstractController
         $contextCode = $context->getCode();
 
         // Obtener los valores de las variables basados en el contexto y los datos proporcionados
-        $replacementValues = $this->showPlaceholders($contextCode, $data);
+        $replacementValues = $this->showDataPlaceholders($contextCode, $data);
 
         $missingVars = [];
         foreach ($variables as $variable) {
@@ -340,7 +340,7 @@ final class PlantillasController extends AbstractController
         ]);
     }
 
-    public function showPlaceholders(string $contextCode, array $data): array
+    public function showDataPlaceholders(string $contextCode, array $data): array
     {
         $guest = $this->entityManager->getRepository(Huespedes::class)->find($data['guestId']);
         if (!$guest) {
@@ -372,7 +372,10 @@ final class PlantillasController extends AbstractController
 
         switch ($contextCode) {
             case 'USER_MANAGEMENT':
-                return $baseData;
+                return array_merge($baseData, [
+                    'USER_NAME' => $user->getName(),
+                    'USER_SURNAME' => $user->getSurname(),
+                ]);
             case 'INCIDENT_MANAGEMENT':
                 if (!isset($data['idIncident'])) {
                     return ['error' => 'Falta idIncident'];
@@ -398,12 +401,15 @@ final class PlantillasController extends AbstractController
                 if (!$booking) {
                     return ['error' => 'Reserva no encontrada'];
                 }
-                
+
                 return array_merge($baseData, [
+                    'BOOKING_ID' => $booking->getId(),
                     'CHECKIN_DATE' => $booking->getCheckInDate()->format('Y-m-d'),
                     'CHECKOUT_DATE' => $booking->getCheckOutDate()->format('Y-m-d'),
                     'ROOM_TYPE' => $booking->getRoomType()
                 ]);
+            case 'WALLET_MANAGEMENT':
+                return $baseData;
             default:
                 return ['error' => 'Contexto no encontrado o soportado'];
         }
