@@ -297,10 +297,13 @@ final class PlantillasController extends AbstractController
             return new JsonResponse(['error' => 'La plantilla no tiene contexto asociado'], 400);
         }
 
-        // Cargar contenido según idioma
         $templateData = $template->getData();
         $content = $templateData[$languageCode]['content'] ?? null;
         $subject = $templateData[$languageCode]['subject'] ?? null;
+
+        if (!$subject) {
+            return new JsonResponse(['error' => "No se ha introducido un asunto '$subject'."], 400);
+        }
 
         if (!$content) {
             return new JsonResponse(['error' => "No hay contenido para el idioma '$languageCode'."], 400);
@@ -309,7 +312,6 @@ final class PlantillasController extends AbstractController
         $variables = $context->getVariables();
         $contextCode = $context->getCode();
 
-        // Obtener los valores de las variables basados en el contexto y los datos proporcionados
         $replacementValues = $this->showDataPlaceholders($contextCode, $data);
 
         $missingVars = [];
