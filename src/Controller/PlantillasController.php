@@ -412,6 +412,8 @@ final class PlantillasController extends AbstractController
                 ]);
             case 'WALLET_MANAGEMENT':
                 return $baseData;
+            case 'EMAIL_MANAGEMENT':
+                return $baseData;
             default:
                 return ['error' => 'Contexto no encontrado o soportado'];
         }
