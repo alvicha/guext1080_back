@@ -285,7 +285,7 @@ final class PlantillasController extends AbstractController
         }
 
         $idTemplate = $data['templateId'] ?? null;
-        $languageCode = $data['languageCode'] ?? 'es'; // idioma por defecto
+        $languageCode = $data['languageCode'] ?? 'es';
 
         $template = $this->entityManager->getRepository(Plantillas::class)->find($idTemplate);
         if (!$template) {
@@ -314,26 +314,18 @@ final class PlantillasController extends AbstractController
 
         $replacementValues = $this->showDataPlaceholders($contextCode, $data);
 
-        $missingVars = [];
-        foreach ($variables as $variable) {
-            $code = $variable->getCode();
-            if (!array_key_exists($code, $replacementValues)) {
-                $missingVars[] = $code;
-            }
-        }
-
-        if (!empty($missingVars)) {
-            return new JsonResponse([
-                'error' => 'Faltan datos para reemplazar: ' . implode(', ', $missingVars)
-            ], 400);
+        if (isset($replacementValues['error'])) {
+            return new JsonResponse(['error' => $replacementValues['error']], 400);
         }
 
         foreach ($variables as $variable) {
             $code = $variable->getCode();
             $placeholder = '{{' . $code . '}}';
-            $value = $replacementValues[$code];
-            $content = str_replace($placeholder, $value, $content);
-            $subject = str_replace($placeholder, $value, $subject);
+            if (strpos($content, $placeholder) !== false || strpos($subject, $placeholder) !== false) {
+                $value = $replacementValues[$code];
+                $content = str_replace($placeholder, $value, $content);
+                $subject = str_replace($placeholder, $value, $subject);
+            }
         }
 
         return new JsonResponse([
