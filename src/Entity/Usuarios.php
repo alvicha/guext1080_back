@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UsuariosRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UsuariosRepository::class)]
@@ -21,6 +22,10 @@ class Usuarios
 
     #[ORM\Column(length: 255)]
     private ?string $email = null;
+
+    #[ORM\ManyToMany(targetEntity: Roles::class, inversedBy: 'usuarios')]
+    #[ORM\JoinTable(name: 'usuarios_roles')]
+    private Collection $roles;
 
     public function getId(): ?int
     {
@@ -61,5 +66,10 @@ class Usuarios
         $this->email = $email;
 
         return $this;
+    }
+
+    public function getRoles(): ?Collection
+    {
+        return $this->roles;
     }
 }

@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250520063639 extends AbstractMigration
+final class Version20250520112125 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -39,13 +39,25 @@ final class Version20250520063639 extends AbstractMigration
             CREATE TABLE incidencias (id INT AUTO_INCREMENT NOT NULL, place VARCHAR(255) NOT NULL, description VARCHAR(255) NOT NULL, status VARCHAR(15) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE permisos (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, description VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE plantillas (id INT AUTO_INCREMENT NOT NULL, idcontext_id INT NOT NULL, code VARCHAR(255) NOT NULL, data LONGTEXT DEFAULT NULL, INDEX IDX_E91A52B7A6A9DCF5 (idcontext_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE reservas (id INT AUTO_INCREMENT NOT NULL, huesped_id INT NOT NULL, check_in_date DATE NOT NULL, check_out_date DATE NOT NULL, room_type VARCHAR(255) NOT NULL, INDEX IDX_AA1DAB01A9B1478B (huesped_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
+            CREATE TABLE roles (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE roles_permissions (roles_id INT NOT NULL, permisos_id INT NOT NULL, INDEX IDX_CEC2E04338C751C4 (roles_id), INDEX IDX_CEC2E0435FA0F787 (permisos_id), PRIMARY KEY(roles_id, permisos_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
             CREATE TABLE usuarios (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, surname VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE usuarios_roles (usuarios_id INT NOT NULL, roles_id INT NOT NULL, INDEX IDX_CE0972BAF01D3B25 (usuarios_id), INDEX IDX_CE0972BA38C751C4 (roles_id), PRIMARY KEY(usuarios_id, roles_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE variables (id INT AUTO_INCREMENT NOT NULL, code VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -63,6 +75,18 @@ final class Version20250520063639 extends AbstractMigration
             ALTER TABLE reservas ADD CONSTRAINT FK_AA1DAB01A9B1478B FOREIGN KEY (huesped_id) REFERENCES huespedes (id)
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE roles_permissions ADD CONSTRAINT FK_CEC2E04338C751C4 FOREIGN KEY (roles_id) REFERENCES roles (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE roles_permissions ADD CONSTRAINT FK_CEC2E0435FA0F787 FOREIGN KEY (permisos_id) REFERENCES permisos (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE usuarios_roles ADD CONSTRAINT FK_CE0972BAF01D3B25 FOREIGN KEY (usuarios_id) REFERENCES usuarios (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE usuarios_roles ADD CONSTRAINT FK_CE0972BA38C751C4 FOREIGN KEY (roles_id) REFERENCES roles (id) ON DELETE CASCADE
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE contextos_variables ADD CONSTRAINT FK_F3E9DA3CED82107C FOREIGN KEY (variables_id) REFERENCES variables (id) ON DELETE CASCADE
         SQL);
         $this->addSql(<<<'SQL'
@@ -78,6 +102,18 @@ final class Version20250520063639 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE reservas DROP FOREIGN KEY FK_AA1DAB01A9B1478B
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE roles_permissions DROP FOREIGN KEY FK_CEC2E04338C751C4
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE roles_permissions DROP FOREIGN KEY FK_CEC2E0435FA0F787
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE usuarios_roles DROP FOREIGN KEY FK_CE0972BAF01D3B25
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE usuarios_roles DROP FOREIGN KEY FK_CE0972BA38C751C4
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE contextos_variables DROP FOREIGN KEY FK_F3E9DA3CED82107C
@@ -104,13 +140,25 @@ final class Version20250520063639 extends AbstractMigration
             DROP TABLE incidencias
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE permisos
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE plantillas
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE reservas
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE roles
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE roles_permissions
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE usuarios
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE usuarios_roles
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE variables
