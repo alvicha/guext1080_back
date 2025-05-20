@@ -27,9 +27,9 @@ final class PermisosController extends AbstractController
                 return new JsonResponse(['error' => "Usuario con id introducido no encontrado"], 400);
             }
 
-            foreach ($user->getRoles() as $rol) {
-                foreach ($rol->getPermissions() as $permiso) {
-                    $listPermissions[] = $permiso->getName();
+            foreach ($user->getRoles() as $role) {
+                foreach ($role->getPermissions() as $permission) {
+                    $listPermissions[] = $permission->getName();
                 }
             }
 
