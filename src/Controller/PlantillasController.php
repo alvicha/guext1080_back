@@ -151,7 +151,7 @@ final class PlantillasController extends AbstractController
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    
     public function findTemplatesByFilters(array $pageModel, array $filter): array
     {
         $repo = $this->entityManager->getRepository(Plantillas::class);
