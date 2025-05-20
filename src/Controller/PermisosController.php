@@ -18,7 +18,7 @@ final class PermisosController extends AbstractController
         ]);
     }
 
-    #[Route('/api/userPermissions/{id}', name: 'api_user_permissions')]
+    #[Route('/api/userPermissions/{id}', name: 'api_user_permissions', methods: ['GET'])]
     public function getUsersPermissions(Usuarios $user): JsonResponse
     {
         try {
