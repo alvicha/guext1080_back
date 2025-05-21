@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250520112125 extends AbstractMigration
+final class Version20250521062713 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -52,6 +52,9 @@ final class Version20250520112125 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE roles_permissions (roles_id INT NOT NULL, permisos_id INT NOT NULL, INDEX IDX_CEC2E04338C751C4 (roles_id), INDEX IDX_CEC2E0435FA0F787 (permisos_id), PRIMARY KEY(roles_id, permisos_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE tipografias (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, url LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE usuarios (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, surname VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -153,6 +156,9 @@ final class Version20250520112125 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE roles_permissions
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE tipografias
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE usuarios
