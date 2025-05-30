@@ -151,7 +151,7 @@ final class PlantillasController extends AbstractController
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     public function findTemplatesByFilters(array $pageModel, array $filter): array
     {
         $repo = $this->entityManager->getRepository(Plantillas::class);
@@ -177,14 +177,13 @@ final class PlantillasController extends AbstractController
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Ahora sí hacemos la paginación
         $page = max(1, (int) $pageModel['page']);
         $size = (int) $pageModel['size'];
         $qb->setFirstResult(($page - 1) * $size)
             ->setMaxResults($size);
 
         if (!empty($pageModel['orderBy'])) {
-            $direction = strtoupper($pageModel['orientation']);
+            $direction = $pageModel['orientation'];
 
             if ($pageModel['orderBy'] === 'context') {
                 $qb->orderBy('c.code', $direction);
