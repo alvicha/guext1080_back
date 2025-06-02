@@ -401,6 +401,8 @@ final class PlantillasController extends AbstractController
                     'CHECKOUT_DATE' => $booking->getCheckOutDate()->format('Y-m-d'),
                     'ROOM_TYPE' => $booking->getRoomType()
                 ]);
+            case 'HOUSEKEEPING_MANAGEMENT':
+                return $baseData;
             case 'WALLET_MANAGEMENT':
                 return $baseData;
             case 'EMAIL_MANAGEMENT':
